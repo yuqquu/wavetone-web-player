@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Q</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+			}
+			body {
+				width: 100vw;
+				height: 100vh;
+			}
+			#all-container {
+				width: 100%;
+				height: 100%;
+			}
+
+			:root {
+				--time-height: 20;
+				--waveform-height: 20;/* 本当は 50 */
+				--footer-height: 60;
+				--side-width: 50;
+			}
+
+			/* 縦横の長さの設定 */
+			.time {
+				height: calc(var(--time-height) * 1px);
+			}
+			.spectrum {
+				height: calc(100% - var(--time-height) * 1px - var(--waveform-height) * 1px);
+			}
+			.waveform {
+				height: calc(var(--waveform-height) * 1px);
+			}
+			.side {
+				width: 100%;
+			}
+			.bar {
+				width: 100%;
+				width: auto;
+			}
+			#footer {
+				width: 100%;
+				height: calc(var(--footer-height) * 1px);
+			}
+			#main {
+				width: 100%;
+				height: calc(100% - var(--footer-height) * 1px);
+			}
+			#side {
+				width: calc(var(--side-width) * 1px);
+				height: 100%;
+			}
+			#bar {
+				/*width: auto;
+				width: calc(100% - var(--side-width) * 1px);*/
+				flex: 1;
+				height: 100%;
+			}
+
+			/* Overflow の設定 */
+			#side,
+			#bar {
+				overflow-x: scroll;
+				overflow-y: hidden;
+			}
+
+			/* 座標の設定 */
+			/*#bar {
+				position: absolute;
+				top: 0;
+				left: calc(var(--side-width) * 1px);
+				left: 0;
+			}*/
+			#cursor {
+				/*position: absolute;
+				top: 0;
+				left: 200px;
+				height: 100%;
+				border-left: 1px solid #000;
+				float: left;
+				display: none;*/
+			}
+
+			/* 個別設定 */
+			#spectrum-bar{
+				white-space: nowrap;
+				/* width: 100vw; */
+				transform: scaleX(0.5);
+			}
+			#spectrum-bar > img{
+				height: 100%;
+				object-fit: fill;
+			}
+			#bar {
+			}
+			#keyboard{
+				position: absolute;
+				clip: rect(100px auto auto auto);
+			}
+
+			/* flexbox の設定 */
+			#main {
+				display: flex;
+				justify-content: space-between;
+			}
+			#side {
+			}
+			#bar {
+				display: flex;
+				flex-direction: column;
+			}
+			#bar > *{
+				min-width: 80px;
+			}
+		</style>
+		<script>
+			"use strict";
+			let fileInfo = {};
+			fileInfo.name = "";
+			fileInfo.img = {};
+			fileInfo.wavetone = {};
+			const initImg = () => {
+				let integralWidth = 0;
+				for(let i=0; i<fileInfo.img.length; i++){
+					var image = new Image();
+					image.src = "./data/" + fileInfo.name + "_" + ("000" + i).slice(-4) + ".png";
+					//image.style.width = image.width + "px";
+					integralWidth += image.width;
+					document.getElementById("spectrum-bar").appendChild(image);
+				}
+				document.getElementById("spectrum-bar").style.width = integralWidth + "px";
+			};
+			const fetchJson = () => {
+				const getJson = (json) => {
+					fileInfo.name = json.name;
+					fileInfo.img.length = json.img.length;
+					fileInfo.wavetone.blockPerNote = json.wavetone.blockPerNote;
+					fileInfo.wavetone.noteMin = json.wavetone.noteMin;
+					fileInfo.wavetone.noteHeight = json.wavetone.noteHeight;
+					fileInfo.wavetone.blockPerSec = json.wavetone.blockPerSec;
+					fileInfo.wavetone.blockLength = json.wavetone.blockLength;
+				};
+				let request = new XMLHttpRequest();
+				request.onload = () => {
+					if (request.readyState == 4 && request.status == 200) {
+						getJson(JSON.parse(request.responseText));
+						initImg();
+					}
+				};
+				request.open("GET", "./data/propaties.json", true);
+				request.timeout = 10 * 1000;// 10s
+				request.ontimeout = () => {
+					
+				};
+				request.send(null);
+			};
+			window.onload = () => {
+				fetchJson();
+			};
+		</script>
+	</head>
+	<body>
+		<div id="all-container">
+			<div id="main" class="main">
+				<div id="side" class="side">
+					<div id="time-side" class="side time">a</div>
+					<div id="spectrum-side" class="side spectrum">
+						<img id="keyboard" src="data:image/png;base64,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">
+					</div>
+					<div id="waveform-side" class="side waveform">d</div>
+				</div>
+				<div id="bar" class="bar">
+					<div id="time-bar" class="bar time">d</div>
+					<div id="spectrum-bar" class="bar spectrum"></div>
+					<div id="waveform-bar" class="bar waveform">dhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</div>
+					<div id="cursor"></div>
+				</div>
+			</div>
+			<div id="footer">
+				<button>■ 停止</button>
+				<button>▶ 再生</button>
+			</div>
+		</div>
+	</body>
+</html>

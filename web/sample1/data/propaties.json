@@ -1,0 +1,13 @@
+{
+	"name": "out_2019_0908_1245(はてなブログ第4回-1)(js)",
+	"img": {
+		"length": 2
+	},
+	"wavetone": {
+		"noteMin": 12,
+		"noteHeight": 132,
+		"blockPerNote": 10,
+		"blockPerSec": 100,
+		"blockLength": 1500
+	}
+}
